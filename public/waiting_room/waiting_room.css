@@ -1,0 +1,141 @@
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: black;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+}
+/* 별 필드 */
+#starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+.star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: twinkle 2s infinite;
+}
+@keyframes twinkle {
+    0% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+    100% { opacity: 0.3; transform: scale(1); }
+}
+
+/*--------------------------------------------------------------*/
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s;
+    z-index: 1000;
+}
+#overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+
+.container {
+    max-width: 94%;
+    position: relative;
+    margin: auto;
+    top: 5vh;
+    height: 88vh;
+    background: rgba(51, 51, 51, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+.player-list {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: relative;
+}
+.player {
+    background: rgba(68, 68, 68, 0.8);
+    padding: 3%;
+    border-radius: 10px;
+    width: 15%;
+    height: 72vh;
+    top: 2vh;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+}
+#player1 {
+    left: 0%;
+}
+#player2 {
+    right: 0%;
+}
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    background: gray;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+.ready-btn {
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 60vh;
+    font-size: 16px;
+}
+.ready-status {
+    position: absolute;
+    top: 50vh;
+    font-size: 16px;
+    color: #ddd;
+    font-weight: bold;
+}
+.leave-btn {
+    background: #ed6565;
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 30vh;
+    font-size: 16px;
+    position: absolute;
+}
+.hidden{
+    display: none;
+}
+.yellow{
+    background: #ffc107;
+}
+.gray{
+    background: #616161;
+}
+.visible{
+    display: block;
+}

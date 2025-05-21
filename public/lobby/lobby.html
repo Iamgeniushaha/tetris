@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="lobby.css">
+  <script defer src="lobby.js" type="module"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <title>Lobby</title>
+
+</head>
+<body>
+
+<div class="top_bar">
+  <div class="login" id="loginBtn" onclick="click_login()">Login</div>
+  <div class="profile" id="profileBtn" style="display: none;">👤 <span id="username"></span></div>
+</div>
+
+<div class="game_screen"></div>
+<div class="falling-item_hide_block_top"></div>
+<div class="falling-item_hide_block_bottom"></div>
+
+<input type="text" id="roomInput" maxlength="4" placeholder="방 코드 입력" style="position: absolute; margin-left: 50vw; margin-top: 30vh;">
+<button onclick="joinRoom()" style="position: absolute; margin-left: 50vw; margin-top: 35vh;">입장</button>
+
+</body>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('token');
+
+    const loginBtn = document.getElementById('loginBtn');
+    const profileBtn = document.getElementById('profileBtn');
+    const usernameSpan = document.getElementById('username');
+
+    profileBtn.addEventListener("click", () => {
+      if (confirm("로그아웃 하시겠습니까?")) {
+        localStorage.removeItem("token");
+        window.location.reload();
+      }
+    });
+
+    // 🔓 JWT가 있으면 사용자 정보 추출
+    if (token) {
+      const user = parseJwt(token);
+      if (user && user.username) {
+        loginBtn.style.display = "none";
+        profileBtn.style.display = "inline-block";
+        usernameSpan.textContent = user.username;
+      }
+    }
+
+    const socket = io({
+      auth: {
+        token: token
+      }
+    });
+
+    window.joinRoom = function () {
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        window.location.href = "/login";
+        return;
+      }
+      const roomCode = document.getElementById("roomInput").value.trim();
+      if (roomCode.length === 4) {
+
+        window.location.href = `/room=${roomCode}`;
+      } else {
+        alert("4자리 알파벳을 입력하세요.");
+      }
+    };
+
+    socket.on('roomFull', (data) => {
+      alert(data.message);
+    });
+
+    window.click_login = function () {
+      window.location.href = 'login';
+    };
+
+    // JWT 디코딩 함수
+    function parseJwt(token) {
+      try {
+        return JSON.parse(atob(token.split('.')[1]));
+      } catch (e) {
+        return null;
+      }
+    }
+  });
+
+
+
+</script>
+
+</html>

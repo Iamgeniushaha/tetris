@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로그인</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
+            width: 92%;
+            padding: 0.7rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.7rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .toggle {
+            text-align: center;
+            margin-top: 1rem;
+            color: #555;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="login-form">
+    <h2>로그인</h2>
+    <form id="login">
+        <input type="text" placeholder="Email" name="email"/>
+        <input type="password" placeholder="Password" name="password"/>
+        <button type="submit" id="loginBtn">로그인</button>
+    </form>
+    <div class="toggle" onclick="toggleForm()">회원가입하기</div>
+</div>
+
+<div class="container" id="register-form" style="display:none;">
+    <h2>회원가입</h2>
+    <form id="register">
+        <input type="text" placeholder="Username" name="username"/>
+        <input type="email" placeholder="Email" name="email"/>
+        <input type="password" placeholder="Password" name="password"/>
+        <input type="password" placeholder="Password Confirm" name="password_confirm"/>
+        <button type="submit" id="submitBtn">회원가입</button>
+    </form>
+    <div class="toggle" onclick="toggleForm()">로그인하기</div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function toggleForm() {
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const isLoginVisible = loginForm.style.display !== 'none';
+
+        loginForm.style.display = isLoginVisible ? 'none' : 'block';
+        registerForm.style.display = isLoginVisible ? 'block' : 'none';
+
+        document.title = isLoginVisible ? '회원가입' : '로그인';
+    }
+
+    document.getElementById("login").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const submitBtn = document.querySelector("#loginBtn");
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+
+            if (response.ok && result.token) {
+                localStorage.setItem("token", result.token); // JWT 저장
+                window.location.href = result.redirectUrl;
+            }
+        } catch (err) {
+            console.error("로그인 오류:", err);
+            alert("서버 통신 중 오류가 발생했습니다.");
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+
+    document.getElementById("register").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const submitBtn = document.querySelector("#submitBtn");
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+
+            if (response.ok && result.redirectUrl) {
+                window.location.href = result.redirectUrl;
+            }
+        } catch (err) {
+            console.error("회원가입 오류:", err);
+            alert("서버 통신 중 오류가 발생했습니다.");
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+
+
+</body>
+</html>

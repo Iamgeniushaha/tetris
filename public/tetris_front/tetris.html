@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>tetris.io</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="tetris.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io(); // 소켓 연결
+    </script>
+</head>
+<body>
+<h1>Tetris</h1>
+<div class="wrapper-container">
+        <span class="tetris-container">
+            <canvas id="stage" width="250px" height="500px" style="background-color:black;">
+            </canvas>
+            <span class="tetris-panel-container">
+              <p>Next:</p>
+              <canvas id="next" width="150px" height="150px" style="background-color:black;">
+              </canvas>
+              <p>LINES:<span id="lines">0</span></p>
+              <p><span id="message"></span></p>
+              <div class="tetris-panel-container-padding"></div>
+            </span>
+        </span>
+</div>
+<script type="text/javascript" src="tetris.js"></script>
+<script>
+    const tetris = new Tetris();
+    tetris.startGame();
+</script>
+</body>
+</html>
