@@ -17,9 +17,9 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 const connection = mysql.createConnection({
-    host: "read-listen-english-db.chwsuwyw2wwb.ap-northeast-2.rds.amazonaws.com",
-    user: "admin",
-    password : "coldbright08",
+    host: "*****************************",
+    user: "*****",
+    password : "********",
     database: "read_listen_english_db"
 });
 
