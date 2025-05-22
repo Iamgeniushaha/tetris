@@ -16,18 +16,22 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const connection = mysql.createConnection({
-    host: "*****************************",
-    user: "*****",
-    password : "********",
-    database: "read_listen_english_db"
-});
+const connection = require('./config/db');
+require('dotenv').config();
+
+//
+// const connection = mysql.createConnection({
+//     host: "****",
+//     user: "***",
+//     password : "****",
+//     database: "****"
+// });
 
 const rooms = {};
 
-connection.connect(error => {
-    if (error) throw error;
-});
+// connection.connect(error => {
+//     if (error) throw error;
+// });
 
 app.use(express.static(path.join(__dirname, 'public/lobby')));
 app.use(express.static(path.join(__dirname, 'public/waiting_room')));
@@ -60,7 +64,7 @@ app.get('/login', (req, res) => {
 app.post('/login', encoder, (req, res) => {
     const { email, password } = req.body;
 
-    connection.query("SELECT * FROM user_acounts WHERE email = ?", [email], async (error, results) => {
+    connection.query("SELECT * FROM user_accounts WHERE email = ?", [email], async (error, results) => {
         if (error) return res.status(500).json({ message: "서버 오류 발생" });
 
         if (results.length === 0) return res.status(401).json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." });
@@ -90,7 +94,7 @@ app.post("/register", async (req, res) => {
         return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
     }
 
-    connection.query("SELECT * FROM read_listen_english_db.user_acounts WHERE email = ?", [email], async (error, results) => {
+    connection.query("SELECT * FROM read_listen_english_db.user_accounts WHERE email = ?", [email], async (error, results) => {
         if (error) return res.status(500).json({ message: "서버 오류 발생" });
 
         if (results.length > 0) return res.status(409).json({ message: "이미 존재하는 이메일입니다." });
@@ -98,7 +102,7 @@ app.post("/register", async (req, res) => {
         try {
             const hashedPassword = await bcrypt.hash(password, saltRounds);
             connection.query(
-                "INSERT INTO user_acounts (username, email, password) VALUES (?, ?, ?)",
+                "INSERT INTO user_accounts (username, email, password) VALUES (?, ?, ?)",
                 [username, email, hashedPassword],
                 (error) => {
                     if (error) return res.status(500).json({ message: "회원가입 실패" });
