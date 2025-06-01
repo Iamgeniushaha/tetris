@@ -19,19 +19,8 @@ const io = socketIo(server);
 const connection = require('./config/db');
 require('dotenv').config();
 
-//
-// const connection = mysql.createConnection({
-//     host: "****",
-//     user: "***",
-//     password : "****",
-//     database: "****"
-// });
-
 const rooms = {};
 
-// connection.connect(error => {
-//     if (error) throw error;
-// });
 
 app.use(express.static(path.join(__dirname, 'public/lobby')));
 app.use(express.static(path.join(__dirname, 'public/waiting_room')));
@@ -52,10 +41,6 @@ app.get('/room=:room/game', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'tetris_front/all_in_one_tetris.html'));
 });
 
-// app.get('/room=:room/game', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'public', 'all_in_one_tetris.html'));
-// });
-
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login&register/login.html'));
 });
@@ -64,7 +49,7 @@ app.get('/login', (req, res) => {
 app.post('/login', encoder, (req, res) => {
     const { email, password } = req.body;
 
-    connection.query("SELECT * FROM user_accounts WHERE email = ?", [email], async (error, results) => {
+    connection.query("SELECT * FROM tetris_user_accounts WHERE email = ?", [email], async (error, results) => {
         if (error) return res.status(500).json({ message: "서버 오류 발생" });
 
         if (results.length === 0) return res.status(401).json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." });
@@ -94,7 +79,7 @@ app.post("/register", async (req, res) => {
         return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
     }
 
-    connection.query("SELECT * FROM read_listen_english_db.user_accounts WHERE email = ?", [email], async (error, results) => {
+    connection.query("SELECT * FROM tetris_user_accounts WHERE email = ?", [email], async (error, results) => {
         if (error) return res.status(500).json({ message: "서버 오류 발생" });
 
         if (results.length > 0) return res.status(409).json({ message: "이미 존재하는 이메일입니다." });
@@ -102,7 +87,7 @@ app.post("/register", async (req, res) => {
         try {
             const hashedPassword = await bcrypt.hash(password, saltRounds);
             connection.query(
-                "INSERT INTO user_accounts (username, email, password) VALUES (?, ?, ?)",
+                "INSERT INTO tetris_user_accounts (username, email, password) VALUES (?, ?, ?)",
                 [username, email, hashedPassword],
                 (error) => {
                     if (error) return res.status(500).json({ message: "회원가입 실패" });
@@ -198,9 +183,14 @@ io.on('connection', (socket) => {
         function checkAllReady(roomId) {
             const users = rooms[roomId];
             const allReady = users.every(user => user.ready === true);
-            if (allReady) {
-                socket.to(roomId).emit("bothready");
-                socket.emit("bothready");
+            const room = io.sockets.adapter.rooms.get(roomId);
+            const numClients = room ? room.size : 0;
+
+            if(numClients === 2) {
+                if (allReady) {
+                    socket.to(roomId).emit("bothready");
+                    socket.emit("bothready");
+                }
             }
         }
         checkAllReady(roomId);
