@@ -1,2 +1,4 @@
 .env
 ★ 웹페이지 제작 프로젝트 기획서_2025.hwpx
+./node_modules
+./test
