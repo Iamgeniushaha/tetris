@@ -38,7 +38,7 @@ app.get('/room=:room', (req, res) => {
 });
 
 app.get('/room=:room/game', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'tetris_front/all_in_one_tetris.html'));
+    res.sendFile(path.join(__dirname, 'public', 'tetris_front/all_in_one_tetris_test.html'));
 });
 
 app.get('/login', (req, res) => {

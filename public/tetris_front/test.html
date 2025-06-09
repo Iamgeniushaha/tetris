@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>그라데이션 게이지</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            gap: 40px;
+        }
+
+        .container {
+            width: 60px;
+            height: 300px;
+            background-color: #ddd;
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #000;
+        }
+
+        .fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            transition: height 0.2s ease, background-color 0.2s ease;
+        }
+
+        input[type="range"] {
+            writing-mode: bt-lr;
+            appearance: slider-vertical;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="fill" id="fill"></div>
+</div>
+
+<input type="range" id="slider" min="0" max="100" value="100">
+
+<script>
+    const slider = document.getElementById("slider");
+    const fill = document.getElementById("fill");
+
+    function getColor(percent) {
+        // percent: 0 (빨강) ~ 100 (초록)
+        const r = Math.round(255 * (100 - percent) / 100);
+        const g = Math.round(240 * (percent / 100));
+        return `rgb(${r},${g},0)`;
+    }
+
+    function updateFill(value) {
+        fill.style.height = value + "%";
+        fill.style.backgroundColor = getColor(value);
+    }
+
+    slider.addEventListener("input", () => {
+        updateFill(slider.value);
+    });
+
+    // 초기 설정
+    updateFill(slider.value);
+</script>
+
+</body>
+</html>
