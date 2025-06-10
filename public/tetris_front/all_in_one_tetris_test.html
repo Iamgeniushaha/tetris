@@ -1,116 +1,156 @@
 <!DOCTYPE html>
 <html>
 <head>
-      <meta charset="UTF-8">
-      <title>tetris.io</title>
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <script src="/socket.io/socket.io.js"></script>
+    <meta charset="UTF-8">
+    <title>tetris.io</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="/socket.io/socket.io.js"></script>
     <script src="/all_in_one_tetris.js"></script>
-
     <style>
-    html {
-      touch-action: manipulation;
-        background-image: linear-gradient(175deg, #779ccc, #e9c2f4);
-        width: 100vw;
-        height: 100vh;
-        margin: 0;
-        overflow: hidden;
-    }
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /*background-color: #88f11e;*/
-    }
+        html {
+            touch-action: manipulation;
+            background-image: linear-gradient(175deg, #779ccc, #e9c2f4);
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
 
-    .wrapper-container {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 30px;
-        margin-top: 30px;
-        left: -50px;
-    }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    .tetris-container {
-      display: flex;
-      flex-direction: row;
-      margin: 10px;
-      background-color: #ffffff;
-        position: relative;
-        top: 0px;
-        width: 50%;
-        height: 50%;
-    }
+        .wrapper-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            margin-top: 30px;
+            left: -50px;
+        }
 
-    .tetris-panel-container {
-      display: flex;
-      padding-left: 10px;
-      padding-right: 10px;
-      flex-direction: column;
-      color: white;
-      background-color: #333333;
-        width: 100%;
-        height: 100%;
-    }
+        .tetris-container {
+            display: flex;
+            flex-direction: row;
+            margin: 10px;
+            background-color: #ffffff;
+            position: relative;
+            top: 0px;
+            width: 50%;
+            height: 50%;
+        }
 
-    .tetris-panel-container-padding {
-      flex-grow: 1;
-    }
+        .tetris-panel-container {
+            display: flex;
+            padding-left: 10px;
+            padding-right: 10px;
+            flex-direction: column;
+            color: white;
+            background-color: #333333;
+            width: 100%;
+            height: 100%;
+        }
 
-    .tetris-panel-container p {
-      margin: 0;
-      padding: 0;
-    }
+        .tetris-panel-container-padding {
+            flex-grow: 1;
+        }
 
-    .player1{
-      display: flex;
-      flex-direction: row;
-      margin-left: 10px;
+        .tetris-panel-container p {
+            margin: 0;
+            padding: 0;
+        }
 
-    }
-    #player1_gauge{
-        position: absolute;
-        margin-left: -94vw;
-        background-color: orangered;
-        width: 2vw;
-        height: 50vh;
-        border: 1px solid black;
-    }
-    #player2_gauge{
-        position: absolute;
-        background-color: dodgerblue;
-        width: 2vw;
-        height: 50vh;
-        margin-left: 80vw;
-        border-right: 1px solid black;
-        border-top: 1px solid black;
-        border-bottom: 1px solid black;
-    }
-  </style>
+        /* 게이지 스타일 */
+        .gauge-container {
+            position: absolute;
+            width: 2vw;
+            height: 50vh;
+            border: 1px solid #000;
+            border-radius: 10px;
+            background-color: #ddd;
+            overflow: hidden;
+        }
+
+        .gauge-container.left {
+            left: 2vw;
+            top: 25vh;
+        }
+
+        .gauge-container.right {
+            right: 2vw;
+            top: 25vh;
+        }
+
+        .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background-color: red;
+            transition: height 0.3s ease, background-color 0.3s ease;
+        }
+    </style>
 </head>
 <body>
-<div id="player1_gauge"></div>
-<div id="player2_gauge"></div>
-<div style="" class="wrapper-container">
-        <span class="tetris-container">
-            <canvas id="stage" width="300%" height="600%" style="background-color:black; left: -100%;">
-            </canvas>
-            <span class="tetris-panel-container">
-              <p>Next:</p>
-              <canvas id="next" width="150%" height="150%" style="background-color:black;">
-              </canvas>
-              <p>LINES:<span id="lines">0</span></p>
-              <p><span id="message"></span></p>
-            </span>
-        </span>
+
+<!-- 좌측 게이지 -->
+<div class="gauge-container left">
+    <div class="gauge-fill" id="player1_fill"></div>
 </div>
+
+<!-- 우측 게이지 -->
+<div class="gauge-container right">
+    <div class="gauge-fill" id="player2_fill"></div>
+</div>
+
+<!-- 테트리스 게임 UI -->
+<div class="wrapper-container">
+    <span class="tetris-container">
+        <canvas id="stage" width="300%" height="600%" style="background-color:black; left: -100%;"></canvas>
+        <span class="tetris-panel-container">
+            <p>Next:</p>
+            <canvas id="next" width="150%" height="150%" style="background-color:black;"></canvas>
+            <p>LINES:<span id="lines">0</span></p>
+            <p><span id="message"></span></p>
+        </span>
+    </span>
+</div>
+
 <script>
+    // 게이지 색상 함수
+    function getGaugeColor(percent) {
+        if (percent >= 50) {
+            const ratio = (percent - 50) / 50;
+            const r = Math.round(255 * (1 - ratio));
+            const g = Math.round(165 + (240 - 165) * ratio);
+            return `rgb(${r},${g},0)`;
+        } else {
+            const ratio = percent / 50;
+            const g = Math.round(165 * ratio);
+            return `rgb(255,${g},0)`;
+        }
+    }
+
+    // 게이지 설정 함수
+    function setGauge(player, percent) {
+        const fill = document.getElementById(player + '_fill');
+        fill.style.height = percent + '%';
+        fill.style.backgroundColor = getGaugeColor(percent);
+    }
+
+    // 예시: 게이지 수동 조정
+    setGauge("player1", 100);
+    setGauge("player2", 10);
+
+    // 테트리스 시작
     document.addEventListener("DOMContentLoaded", function () {
         var tetris = new Tetris();
         tetris.startGame();
     });
 </script>
+
 </body>
 </html>

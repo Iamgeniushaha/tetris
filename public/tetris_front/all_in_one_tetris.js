@@ -6,6 +6,7 @@ if (!token) {
 class Tetris {
     constructor() {
         // const socket = io();
+        this.socket = io();
         this.blockQueue = this.shuffleBlocks(); // 초기 블록 큐 생성
         this.stageWidth = 10;
         this.stageHeight = 20;

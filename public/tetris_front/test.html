@@ -49,13 +49,21 @@
 <script>
     const slider = document.getElementById("slider");
     const fill = document.getElementById("fill");
-
     function getColor(percent) {
-        // percent: 0 (빨강) ~ 100 (초록)
-        const r = Math.round(255 * (100 - percent) / 100);
-        const g = Math.round(240 * (percent / 100));
-        return `rgb(${r},${g},0)`;
+        if (percent >= 50) {
+            // 50~100: 주황 → 초록
+            const ratio = (percent - 50) / 50;
+            const r = Math.round(255 * (1 - ratio)); // 255 → 0
+            const g = Math.round(165 + (240 - 165) * ratio); // 165 → 240
+            return `rgb(${r},${g},0)`;
+        } else {
+            // 0~50: 빨강 → 주황
+            const ratio = percent / 50;
+            const g = Math.round(165 * ratio); // 0 → 165
+            return `rgb(255,${g},0)`;
+        }
     }
+
 
     function updateFill(value) {
         fill.style.height = value + "%";
