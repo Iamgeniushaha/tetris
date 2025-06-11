@@ -5,7 +5,7 @@
     <title>tetris.io</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/all_in_one_tetris.js"></script>
+    <script src="all_in_one_tetris.js"></script>
     <style>
         html {
             touch-action: manipulation;
@@ -52,10 +52,6 @@
             background-color: #333333;
             width: 100%;
             height: 100%;
-        }
-
-        .tetris-panel-container-padding {
-            flex-grow: 1;
         }
 
         .tetris-panel-container p {
@@ -120,30 +116,21 @@
 </div>
 
 <script>
-    // 게이지 색상 함수
-    function getGaugeColor(percent) {
-        if (percent >= 50) {
-            const ratio = (percent - 50) / 50;
-            const r = Math.round(255 * (1 - ratio));
-            const g = Math.round(165 + (240 - 165) * ratio);
-            return `rgb(${r},${g},0)`;
-        } else {
-            const ratio = percent / 50;
-            const g = Math.round(165 * ratio);
-            return `rgb(255,${g},0)`;
-        }
+    const token = localStorage.getItem("token");
+    const socket = io({
+        auth: { token }
+    });
+
+    if (!token) {
+        alert('로그인이 필요합니다');
+        window.location.href = '/login';
     }
 
-    // 게이지 설정 함수
-    function setGauge(player, percent) {
-        const fill = document.getElementById(player + '_fill');
-        fill.style.height = percent + '%';
-        fill.style.backgroundColor = getGaugeColor(percent);
-    }
+    const path = window.location.pathname; // "/room=abcd/game"
+    const roomId = path.split('/')[1].split('=')[1]; // "abcd"
 
-    // 예시: 게이지 수동 조정
-    setGauge("player1", 100);
-    setGauge("player2", 10);
+    console.log(roomId);
+    socket.emit("joinRoom", { roomId });
 
     // 테트리스 시작
     document.addEventListener("DOMContentLoaded", function () {

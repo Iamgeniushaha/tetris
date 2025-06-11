@@ -1,11 +1,32 @@
-const token = localStorage.getItem('token');
-if (!token) {
-    alert('로그인이 필요합니다');
-    window.location.href = '/login';
+
+
+// 게이지 색상 함수
+function getGaugeColor(percent) {
+    if (percent >= 50) {
+        const ratio = (percent - 50) / 50;
+        const r = Math.round(255 * (1 - ratio));
+        const g = Math.round(165 + (240 - 165) * ratio);
+        return `rgb(${r},${g},0)`;
+    } else {
+        const ratio = percent / 50;
+        const g = Math.round(165 * ratio);
+        return `rgb(255,${g},0)`;
+    }
 }
+
+// 게이지 설정 함수
+function setGauge(player, percent) {
+    const fill = document.getElementById(player + '_fill');
+    fill.style.height = percent + '%';
+    fill.style.backgroundColor = getGaugeColor(percent);
+}
+
+// 예시: 게이지 수동 조정
+setGauge("player1", 100);
+setGauge("player2", 10);
+
 class Tetris {
     constructor() {
-        // const socket = io();
         this.socket = io();
         this.blockQueue = this.shuffleBlocks(); // 초기 블록 큐 생성
         this.stageWidth = 10;
@@ -230,40 +251,6 @@ class Tetris {
         return true;
     }
 
-    // fixBlock(x, y, type, angle) {
-    //     for (let i = 0; i < this.blocks[type].shape[angle].length; i++) {
-    //         let cellX = x + this.blocks[type].shape[angle][i][0];
-    //         let cellY = y + this.blocks[type].shape[angle][i][1];
-    //         if (cellY >= 0) {
-    //             this.virtualStage[cellX][cellY] = type;
-    //         }
-    //     }
-    //     for (let y = this.stageHeight - 1; y >= 0; ) {
-    //         let filled = true;
-    //         for (let x = 0; x < this.stageWidth; x++) {
-    //             if (this.virtualStage[x][y] == null) {
-    //                 filled = false;
-    //                 break;
-    //             }
-    //         }
-    //         if (filled) {
-    //             for (let y2 = y; y2 > 0; y2--) {
-    //                 for (let x = 0; x < this.stageWidth; x++) {
-    //                     this.virtualStage[x][y2] = this.virtualStage[x][y2 - 1];
-    //                 }
-    //             }
-    //             for (let x = 0; x < this.stageWidth; x++) {
-    //                 this.virtualStage[x][0] = null;
-    //             }
-    //             let linesElem = document.getElementById("lines");
-    //             this.deletedLines++;
-    //             linesElem.innerText = "" + this.deletedLines;
-    //         } else {
-    //             y--;
-    //         }
-    //     }
-    // }
-
     fixBlock(x, y, type, angle) {
         for (let i = 0; i < this.blocks[type].shape[angle].length; i++) {
             let cellX = x + this.blocks[type].shape[angle][i][0];
@@ -303,8 +290,7 @@ class Tetris {
         }
 
         if (deletedThisTurn > 0) {
-            const deleteMapping = { 1: 2, 2: 5, 3: 8 };
-            // socket.emit('line_deleted', deleteMapping[deletedThisTurn] || 12);
+            this.socket.emit('line_deleted', deletedThisTurn);
             console.log(`이번 턴에서 ${deletedThisTurn}줄 삭제됨!`);
         }
     }

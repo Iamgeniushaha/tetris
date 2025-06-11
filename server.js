@@ -150,6 +150,7 @@ io.on('connection', (socket) => {
     socket.on("joinRoom", ({ roomId }) => {
         const room = io.sockets.adapter.rooms.get(roomId);
         const numClients = room ? room.size : 0;
+        console.log(roomId);
 
         if (numClients >= 2) {
             socket.emit("roomFull");
@@ -166,9 +167,9 @@ io.on('connection', (socket) => {
             (id) => io.sockets.sockets.get(id).data.nickname
         );
 
-        // io.to(roomId).emit("updateWaitingRoom", usersInRoom);
         socket.emit("updateUsername", socket.data.nickname);
         checkUserLength(rooms, roomId);
+        console.log(rooms[roomId]);
     });
 
     socket.on("toggleReady", (isReady, roomId) => {
@@ -188,6 +189,7 @@ io.on('connection', (socket) => {
 
             if(numClients === 2) {
                 if (allReady) {
+                    console.log(rooms[roomId]);
                     socket.to(roomId).emit("bothready");
                     socket.emit("bothready");
                 }
@@ -196,6 +198,12 @@ io.on('connection', (socket) => {
         checkAllReady(roomId);
     });
 
+    socket.on("line_deleted", (deletedThisTurn, roomid) =>{
+        const deleteMapping = { 1: 2, 2: 5, 3: 8 };
+        const line_deleted = deleteMapping[deletedThisTurn] || 12
+        console.log(line_deleted)
+    })
+
     socket.on('disconnect', () => {
         const nickname = socket.user?.username;
         const roomId = socket.roomId;
@@ -203,12 +211,12 @@ io.on('connection', (socket) => {
 
         if (roomId) {
             removeUserFromRoom(roomId, nickname);
+            console.log(rooms[roomId]);
 
             const room = io.sockets.adapter.rooms.get(roomId);
             const usersInRoom = Array.from(room || []).map(
                 (id) => io.sockets.sockets.get(id).data.nickname
             );
-            // io.to(roomId).emit('updateWaitingRoom', usersInRoom);
             io.to(roomId).emit("nosecondplayer");
 
             if (usersInRoom.length === 0) {
