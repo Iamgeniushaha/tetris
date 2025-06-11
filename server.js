@@ -198,7 +198,8 @@ io.on('connection', (socket) => {
         checkAllReady(roomId);
     });
 
-    socket.on("line_deleted", (deletedThisTurn, roomid) =>{
+    socket.on("line_deleted", (deletedThisTurn, roomId) =>{
+        console.log(deletedThisTurn, roomId)
         const deleteMapping = { 1: 2, 2: 5, 3: 8 };
         const line_deleted = deleteMapping[deletedThisTurn] || 12
         console.log(line_deleted)
