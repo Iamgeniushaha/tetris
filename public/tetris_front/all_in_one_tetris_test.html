@@ -142,6 +142,43 @@
         console.log(roomId);
         socket.emit("joinRoom", { roomId });
 
+
+        function getGaugeColor(percent) {
+            if (percent >= 50) {
+                const ratio = (percent - 50) / 50;
+                const r = Math.round(255 * (1 - ratio));
+                const g = Math.round(165 + (240 - 165) * ratio);
+                return `rgb(${r},${g},0)`;
+            } else {
+                const ratio = percent / 50;
+                const g = Math.round(165 * ratio);
+                return `rgb(255,${g},0)`;
+            }
+        }
+
+        function setGauge(player, percent) {
+            const fill = document.getElementById(player + '_fill');
+            fill.style.height = percent + '%';
+            fill.style.backgroundColor = getGaugeColor(percent);
+        }
+
+        function check_health(player, health) {
+            if(health <= 0) {
+                socket.emit("gameover", {player});
+                gameover();
+
+            }
+        }
+        function gameover(){
+
+        }
+
+        // 예시: 게이지 수동 조정
+        let player1_health = 100;
+        let player2_health = 100;
+        setGauge("player1", player1_health);
+        setGauge("player2", player2_health);
+
         class Tetris {
             constructor() {
                 this.blockQueue = this.shuffleBlocks(); // 초기 블록 큐 생성
@@ -481,37 +518,20 @@
             var tetris = new Tetris();
             tetris.startGame();
         });
+
+        socket.on('higher_gauge', (line_deleted)=>{
+            player1_health= player1_health - line_deleted;
+            player2_health= player2_health + line_deleted/2;
+            setGauge("player1", player1_health);
+            setGauge("player2", player2_health);
+        });
+        socket.on('lower_gauge', (line_deleted)=>{
+            player1_health= player1_health + line_deleted/2;
+            player2_health= player2_health - line_deleted;
+            setGauge("player1", player1_health);
+            setGauge("player2", player2_health);
+        })
     }
-
-
-
-
-
-
-    // 게이지 색상 함수
-    function getGaugeColor(percent) {
-        if (percent >= 50) {
-            const ratio = (percent - 50) / 50;
-            const r = Math.round(255 * (1 - ratio));
-            const g = Math.round(165 + (240 - 165) * ratio);
-            return `rgb(${r},${g},0)`;
-        } else {
-            const ratio = percent / 50;
-            const g = Math.round(165 * ratio);
-            return `rgb(255,${g},0)`;
-        }
-    }
-
-    // 게이지 설정 함수
-    function setGauge(player, percent) {
-        const fill = document.getElementById(player + '_fill');
-        fill.style.height = percent + '%';
-        fill.style.backgroundColor = getGaugeColor(percent);
-    }
-
-    // 예시: 게이지 수동 조정
-    setGauge("player1", 100);
-    setGauge("player2", 10);
 
     // 테트리스 시작
 

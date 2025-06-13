@@ -201,9 +201,10 @@ io.on('connection', (socket) => {
     socket.on("line_deleted", (deletedThisTurn, roomId) =>{
         const nickname = socket.data.nickname;
         console.log(deletedThisTurn, roomId, nickname);
-        const deleteMapping = { 1: 2, 2: 5, 3: 8 };
-        const line_deleted = deleteMapping[deletedThisTurn] || 12;
-
+        const deleteMapping = { 1: 2, 2: 6, 3: 10 };
+        const line_deleted = deleteMapping[deletedThisTurn] || 16;
+        socket.to(roomId).emit("higher_gauge",  line_deleted);
+        socket.emit("lower_gauge", line_deleted);
     })
 
     socket.on('disconnect', () => {
