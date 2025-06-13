@@ -199,10 +199,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on("line_deleted", (deletedThisTurn, roomId) =>{
-        console.log(deletedThisTurn, roomId)
+        const nickname = socket.data.nickname;
+        console.log(deletedThisTurn, roomId, nickname);
         const deleteMapping = { 1: 2, 2: 5, 3: 8 };
-        const line_deleted = deleteMapping[deletedThisTurn] || 12
-        console.log(line_deleted)
+        const line_deleted = deleteMapping[deletedThisTurn] || 12;
+
     })
 
     socket.on('disconnect', () => {
