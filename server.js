@@ -205,7 +205,11 @@ io.on('connection', (socket) => {
         const line_deleted = deleteMapping[deletedThisTurn] || 16;
         socket.to(roomId).emit("higher_gauge",  line_deleted);
         socket.emit("lower_gauge", line_deleted);
-    })
+    });
+
+    socket.on("leave_room",(roomId) => {
+        removeUserFromRoom(roomId, socket.data.nickname);
+    });
 
     socket.on('disconnect', () => {
         const nickname = socket.user?.username;
@@ -213,7 +217,7 @@ io.on('connection', (socket) => {
         console.log(`User disconnected: ${nickname} from room ${roomId}`);
 
         if (roomId) {
-            removeUserFromRoom(roomId, nickname);
+            // removeUserFromRoom(roomId, nickname);
             console.log(rooms[roomId]);
 
             const room = io.sockets.adapter.rooms.get(roomId);

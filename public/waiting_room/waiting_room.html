@@ -176,6 +176,7 @@
     }
 
     function leaveroom(){
+        socket.emit("leaveRoom", roomId);
         socket.disconnect();
         window.location.href = "/";
     }
