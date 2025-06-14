@@ -213,27 +213,18 @@
             }
         }
 
-        function setGauge(player, percent) {
+        function setGauge(player, percent)  {
             const fill = document.getElementById(player + '_fill');
             fill.style.height = percent + '%';
             fill.style.backgroundColor = getGaugeColor(percent);
         }
 
-        function check_health(player, health) {
-            if(health <= 0) {
-                socket.emit("gameover", {player});
-                gameover();
-
-            }
-        }
         function gameover(){
         }
 
         // 예시: 게이지 수동 조정
-        let player1_health = 100;
-        let player2_health = 100;
-        setGauge("player1", player1_health);
-        setGauge("player2", player2_health);
+        setGauge("player1", 100);
+        setGauge("player2", 100);
 
         class Tetris {
             constructor() {
@@ -578,11 +569,11 @@
             },3300);
         });
 
-        socket.on('higher_gauge', (player1_health, player2_health)=>{
-            setGauge("player1", player1_health);
-            setGauge("player2", player2_health);
+        socket.on('higher_gauge', ({ player1_health, player2_health })=>{
+            setGauge("player1", player2_health);
+            setGauge("player2", player1_health);
         });
-        socket.on('lower_gauge', (player1_health, player2_health)=>{
+        socket.on('lower_gauge', ({ player1_health, player2_health })=>{
             setGauge("player1", player1_health);
             setGauge("player2", player2_health);
         })
