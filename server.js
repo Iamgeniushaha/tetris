@@ -121,8 +121,9 @@ io.on('connection', (socket) => {
             rooms[roomId] = [];
         }
         const exists = rooms[roomId].some(user => user.nickname === nickname);
+        let health = 100;
         if (!exists) {
-            rooms[roomId].push({ nickname, ready: false });
+            rooms[roomId].push({ nickname, ready: false, health });
         }
     }
 
@@ -147,6 +148,40 @@ io.on('connection', (socket) => {
         }
     }
 
+    function changeHealth(rooms, nickname, delta) {
+        for (const roomId in rooms) {
+            const players = rooms[roomId];
+            for (const player of players) {
+                if (player.nickname === nickname) {
+                    player.health += delta;
+                    if(player.health<=0){
+                        console.log("gameover");
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function findOpponentNickname(rooms, nickname) {
+        for (const roomId in rooms) {
+            const players = rooms[roomId];
+            const targetIndex = players.findIndex(p => p.nickname === nickname);
+
+            if (targetIndex !== -1) {
+                // 같은 방의 다른 사람 찾기
+                for (let i = 0; i < players.length; i++) {
+                    if (i !== targetIndex) {
+                        return players[i].nickname;
+                    }
+                }
+                return null; // 방엔 자신밖에 없음
+            }
+        }
+        return null; // 닉네임 못 찾음
+    }
+
     socket.on("joinRoom", ({ roomId }) => {
         const room = io.sockets.adapter.rooms.get(roomId);
         const numClients = room ? room.size : 0;
@@ -169,7 +204,7 @@ io.on('connection', (socket) => {
 
         socket.emit("updateUsername", socket.data.nickname);
         checkUserLength(rooms, roomId);
-        console.log(rooms[roomId]);
+        console.log(rooms);
     });
 
     socket.on("toggleReady", (isReady, roomId) => {
@@ -200,11 +235,28 @@ io.on('connection', (socket) => {
 
     socket.on("line_deleted", (deletedThisTurn, roomId) =>{
         const nickname = socket.data.nickname;
+        const opponent_nickname = findOpponentNickname(roomId, nickname);
+        const players = rooms[roomId];
         console.log(deletedThisTurn, roomId, nickname);
         const deleteMapping = { 1: 2, 2: 6, 3: 10 };
         const line_deleted = deleteMapping[deletedThisTurn] || 16;
-        socket.to(roomId).emit("higher_gauge",  line_deleted);
-        socket.emit("lower_gauge", line_deleted);
+        changeHealth(roomId, nickname, line_deleted/2);
+        changeHealth(roomId, opponent_nickname, (line_deleted)*-1);
+
+        let player1_health = null;
+        let player2_health = null;
+
+        for (const player of players) {
+            if (player.nickname === nickname) {
+                player1_health = player.health;
+            } else {
+                player2_health = player.health;
+            }
+        }
+
+// 전송은 루프 밖에서
+        socket.to(roomId).emit("higher_gauge", { player1_health, player2_health });
+        socket.emit("lower_gauge", { player1_health, player2_health });
     });
 
     socket.on("leave_room",(roomId) => {

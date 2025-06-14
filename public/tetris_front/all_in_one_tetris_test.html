@@ -5,7 +5,6 @@
     <title>tetris.io</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <script src="/socket.io/socket.io.js"></script>
-<!--    <script src="../all_in_one_tetris.js"></script>-->
     <style>
         html {
             touch-action: manipulation;
@@ -88,9 +87,38 @@
             background-color: red;
             transition: height 0.3s ease, background-color 0.3s ease;
         }
+
+        .dark{
+            position: absolute;
+            width: 100vw;
+            height: 120vh;
+            background-color: black;
+            z-index: 10;
+            opacity: 80%;
+        }
+
+        #count {
+            transition: transform 0.5s, opacity 0.5s;
+        }
+        .fade {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        .countdown{
+            position: absolute;
+            justify-content: center;
+            align-items: flex-start;
+            font-size: 8em;
+            color: white;
+            z-index: 20;
+        }
     </style>
 </head>
 <body>
+
+<div id="dark" class="dark opacity"></div>
+<div id="count">3</div>
 
 <!-- 좌측 게이지 -->
 <div class="gauge-container left">
@@ -116,12 +144,41 @@
 </div>
 
 <script>
+    function count_down() {
+        const countEl = document.getElementById('count');
+        const background = document.getElementById('dark');
+        let count = 3;
+
+        const countdown = setInterval(() => {
+            countEl.classList.add('fade');
+            countEl.classList.add('countdown');
+
+            setTimeout(() => {
+                count--;
+                if (count > 0) {
+                    countEl.textContent = count;
+                    countEl.classList.remove('fade');
+                } else {
+                    clearInterval(countdown);
+                    countEl.textContent = 'Start!';
+                    countEl.classList.remove('fade');
+                    // background.classList.remove('dark');
+                    background.classList.add('fade');
+                    setTimeout(()=> {
+                        countEl.classList.add('fade');
+                    },500);
+                }
+            }, 500);
+        }, 1000);
+    }
+
     const token = localStorage.getItem("token");
 
     if (!token) {
         alert('로그인이 필요합니다');
         window.location.href = '/login';
-    } else {
+    }
+    else {
         const socket = io({
             auth: { token },
             transports: ['websocket'], // 명시적으로 설정 권장
@@ -170,7 +227,6 @@
             }
         }
         function gameover(){
-
         }
 
         // 예시: 게이지 수동 조정
@@ -515,25 +571,22 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            var tetris = new Tetris();
-            tetris.startGame();
+            count_down();
+            setTimeout(()=> {
+                var tetris = new Tetris();
+                tetris.startGame();
+            },3300);
         });
 
-        socket.on('higher_gauge', (line_deleted)=>{
-            player1_health= player1_health - line_deleted;
-            player2_health= player2_health + line_deleted/2;
+        socket.on('higher_gauge', (player1_health, player2_health)=>{
             setGauge("player1", player1_health);
             setGauge("player2", player2_health);
         });
-        socket.on('lower_gauge', (line_deleted)=>{
-            player1_health= player1_health + line_deleted/2;
-            player2_health= player2_health - line_deleted;
+        socket.on('lower_gauge', (player1_health, player2_health)=>{
             setGauge("player1", player1_health);
             setGauge("player2", player2_health);
         })
     }
-
-    // 테트리스 시작
 
 </script>
 

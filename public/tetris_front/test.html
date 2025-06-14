@@ -2,81 +2,49 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>그라데이션 게이지</title>
+    <title>321 카운트 예제</title>
     <style>
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            gap: 40px;
+            background: #ffffff;
+            color: #575757;
+            font-family: 'Arial', sans-serif;
+            font-size: 5rem;
+            flex-direction: column;
         }
-
-        .container {
-            width: 60px;
-            height: 300px;
-            background-color: #ddd;
-            border-radius: 30px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #000;
+        #count {
+            transition: transform 0.5s, opacity 0.5s;
         }
-
-        .fill {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            transition: height 0.2s ease, background-color 0.2s ease;
-        }
-
-        input[type="range"] {
-            writing-mode: bt-lr;
-            appearance: slider-vertical;
-            height: 300px;
+        .fade {
+            opacity: 0;
+            transform: scale(0.5);
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="fill" id="fill"></div>
-</div>
-
-<input type="range" id="slider" min="0" max="100" value="100">
-
+<div id="count">3</div>
 <script>
-    const slider = document.getElementById("slider");
-    const fill = document.getElementById("fill");
-    function getColor(percent) {
-        if (percent >= 50) {
-            // 50~100: 주황 → 초록
-            const ratio = (percent - 50) / 50;
-            const r = Math.round(255 * (1 - ratio)); // 255 → 0
-            const g = Math.round(165 + (240 - 165) * ratio); // 165 → 240
-            return `rgb(${r},${g},0)`;
-        } else {
-            // 0~50: 빨강 → 주황
-            const ratio = percent / 50;
-            const g = Math.round(165 * ratio); // 0 → 165
-            return `rgb(255,${g},0)`;
-        }
-    }
+    const countEl = document.getElementById('count');
+    let count = 3;
 
+    const countdown = setInterval(() => {
+        countEl.classList.add('fade');
 
-    function updateFill(value) {
-        fill.style.height = value + "%";
-        fill.style.backgroundColor = getColor(value);
-    }
-
-    slider.addEventListener("input", () => {
-        updateFill(slider.value);
-    });
-
-    // 초기 설정
-    updateFill(slider.value);
+        setTimeout(() => {
+            count--;
+            if (count > 0) {
+                countEl.textContent = count;
+                countEl.classList.remove('fade');
+            } else {
+                clearInterval(countdown);
+                countEl.textContent = '시작!';
+                countEl.classList.remove('fade');
+            }
+        }, 500);
+    }, 1000);
 </script>
-
 </body>
 </html>
